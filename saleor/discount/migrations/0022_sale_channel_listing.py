@@ -13,7 +13,7 @@ def migrate_sale_data(apps, schema):
     Sale = apps.get_model("discount", "Sale")
     SaleChannelListing = apps.get_model("discount", "SaleChannelListing")
 
-    currency = os.environ.get("DEFAULT_CURRENCY", "USD")
+    currency = os.environ.get("DEFAULT_CURRENCY", "EUR")
     if Sale.objects.exists():
         channel, _ = Channel.objects.get_or_create(
             slug=slugify(settings.DEFAULT_CHANNEL_SLUG),

@@ -107,7 +107,7 @@ PRODUCTS_LIST_DIR = "products-list/"
 
 DUMMY_STAFF_PASSWORD = "password"
 
-DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "USD")
+DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "EUR")
 
 IMAGES_MAPPING = {
     126: ["saleor-headless-omnichannel-book.png"],
@@ -212,14 +212,14 @@ def create_categories(categories_data, placeholder_dir):
 
 
 def create_collection_channel_listings(collection_channel_listings_data):
-    channel_USD = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
-    channel_PLN = Channel.objects.get(slug="channel-pln")
+    channel_NL = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
+    channel_DE = Channel.objects.get(slug="channel-de")
     for collection_channel_listing in collection_channel_listings_data:
         pk = collection_channel_listing["pk"]
         defaults = dict(collection_channel_listing["fields"])
         defaults["collection_id"] = defaults.pop("collection")
         channel = defaults.pop("channel")
-        defaults["channel_id"] = channel_USD.pk if channel == 1 else channel_PLN.pk
+        defaults["channel_id"] = channel_NL.pk if channel == 1 else channel_DE.pk
         CollectionChannelListing.objects.update_or_create(pk=pk, defaults=defaults)
 
 
@@ -282,14 +282,14 @@ def create_products(products_data, placeholder_dir, create_images):
 
 
 def create_product_channel_listings(product_channel_listings_data):
-    channel_USD = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
-    channel_PLN = Channel.objects.get(slug="channel-pln")
+    channel_NL = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
+    channel_DE = Channel.objects.get(slug="channel-de")
     for product_channel_listing in product_channel_listings_data:
         pk = product_channel_listing["pk"]
         defaults = dict(product_channel_listing["fields"])
         defaults["product_id"] = defaults.pop("product")
         channel = defaults.pop("channel")
-        defaults["channel_id"] = channel_USD.pk if channel == 1 else channel_PLN.pk
+        defaults["channel_id"] = channel_NL.pk if channel == 1 else channel_DE.pk
         ProductChannelListing.objects.update_or_create(pk=pk, defaults=defaults)
 
 
@@ -329,15 +329,15 @@ def create_product_variants(variants_data, create_images):
 
 
 def create_product_variant_channel_listings(product_variant_channel_listings_data):
-    channel_USD = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
-    channel_PLN = Channel.objects.get(slug="channel-pln")
+    channel_NL = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
+    channel_DE = Channel.objects.get(slug="channel-de")
     for variant_channel_listing in product_variant_channel_listings_data:
         pk = variant_channel_listing["pk"]
         defaults = dict(variant_channel_listing["fields"])
 
         defaults["variant_id"] = defaults.pop("variant")
         channel = defaults.pop("channel")
-        defaults["channel_id"] = channel_USD.pk if channel == 1 else channel_PLN.pk
+        defaults["channel_id"] = channel_NL.pk if channel == 1 else channel_DE.pk
         ProductVariantChannelListing.objects.update_or_create(pk=pk, defaults=defaults)
 
 
@@ -750,7 +750,7 @@ def create_fulfillments(order):
 
 def create_fake_order(max_order_lines=5, create_preorder_lines=False):
     channel = (
-        Channel.objects.filter(slug__in=[settings.DEFAULT_CHANNEL_SLUG, "channel-pln"])
+        Channel.objects.filter(slug__in=[settings.DEFAULT_CHANNEL_SLUG, "channel-de"])
         .order_by("?")
         .first()
     )
@@ -809,6 +809,7 @@ def create_fake_order(max_order_lines=5, create_preorder_lines=False):
         lines = create_order_lines_with_preorder(order)
     else:
         lines = create_order_lines(order, random.randrange(1, max_order_lines))
+    print(lines)
     order.total = sum([line.total_price for line in lines], shipping_price)
     weight = Weight(kg=0)
     for line in order.lines.all():
@@ -998,16 +999,16 @@ def create_channel(channel_name, currency_code, slug=None, country=None):
 
 def create_channels():
     yield create_channel(
-        channel_name="Channel-USD",
-        currency_code="USD",
+        channel_name="Channel-NL",
+        currency_code="EUR",
         slug=settings.DEFAULT_CHANNEL_SLUG,
         country=settings.DEFAULT_COUNTRY,
     )
     yield create_channel(
-        channel_name="Channel-PLN",
-        currency_code="PLN",
-        slug="channel-pln",
-        country="PL",
+        channel_name="Channel-DE",
+        currency_code="EUR",
+        slug="channel-de",
+        country="DE",
     )
 
 
@@ -1424,7 +1425,7 @@ def create_vouchers():
     for channel in channels:
         discount_value = 25
         min_spent_amount = 200
-        if channel.currency_code == "PLN":
+        if channel.currency_code == "EUR":
             min_spent_amount *= 4
             discount_value *= 4
         VoucherChannelListing.objects.get_or_create(

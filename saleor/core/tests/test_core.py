@@ -93,7 +93,7 @@ def test_create_channels(db):
     for _ in random_data.create_channels():
         pass
     assert Channel.objects.all().count() == 2
-    assert Channel.objects.get(slug="channel-pln")
+    assert Channel.objects.get(slug="channel-de")
 
 
 @override_settings(DEFAULT_CHANNEL_SLUG="test-slug")

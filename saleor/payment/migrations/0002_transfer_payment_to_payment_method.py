@@ -145,7 +145,7 @@ def transfer_payments_to_payment_methods(apps, schema_editor):
             token=pay.token,
             captured_amount=pay.captured_amount,
             total=pay.total,
-            currency=pay.currency or os.environ.get("DEFAULT_CURRENCY", "USD"),
+            currency=pay.currency or os.environ.get("DEFAULT_CURRENCY", "EUR"),
             is_active=get_is_active(pay.status, pay),
             charge_status=get_charge_status(pay),
         )

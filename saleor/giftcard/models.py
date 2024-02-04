@@ -93,7 +93,7 @@ class GiftCard(ModelWithMetadata):
 
     currency = models.CharField(
         max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH,
-        default=os.environ.get("DEFAULT_CURRENCY", "USD"),
+        default=os.environ.get("DEFAULT_CURRENCY", "EUR"),
     )
 
     initial_balance_amount = models.DecimalField(

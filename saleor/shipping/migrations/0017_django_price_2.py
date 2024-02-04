@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
             model_name="shippingmethod",
             name="currency",
             field=models.CharField(
-                default=os.environ.get("DEFAULT_CURRENCY", "USD"),
+                default=os.environ.get("DEFAULT_CURRENCY", "EUR"),
                 max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH,
             ),
         ),

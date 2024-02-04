@@ -26,12 +26,12 @@ def _create_channel_tax_configuration(channel):
 
 
 @pytest.fixture
-def channel_USD(db):
+def channel_EUR(db):
     slug = settings.DEFAULT_CHANNEL_SLUG
     channel = Channel.objects.create(
         name="Main Channel",
         slug=slug,
-        currency_code="USD",
+        currency_code="EUR",
         default_country="US",
         is_active=True,
         allocation_strategy=AllocationStrategy.PRIORITIZE_HIGH_STOCK,
@@ -41,12 +41,12 @@ def channel_USD(db):
 
 
 @pytest.fixture
-def other_channel_USD(db):
+def other_channel_EUR(db):
     channel = Channel.objects.create(
-        name="Other Channel USD",
-        slug="other-usd",
-        currency_code="USD",
-        default_country="US",
+        name="Other Channel EUR",
+        slug="other-eur",
+        currency_code="EUR",
+        default_country="NL",
         is_active=True,
         allocation_strategy=AllocationStrategy.PRIORITIZE_HIGH_STOCK,
     )
@@ -55,10 +55,10 @@ def other_channel_USD(db):
 
 
 @pytest.fixture
-def channel_PLN(db):
+def channel_DE(db):
     channel = Channel.objects.create(
-        name="Channel PLN",
-        slug="c-pln",
+        name="Channel DE",
+        slug="c-de",
         currency_code="PLN",
         default_country="PL",
         is_active=True,

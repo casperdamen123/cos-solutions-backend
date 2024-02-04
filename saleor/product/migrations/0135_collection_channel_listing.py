@@ -13,7 +13,7 @@ def create_collection_channel_listing(apps, schema_editor):
     Channel = apps.get_model("channel", "Channel")
 
     if Collection.objects.exists():
-        currency = os.environ.get("DEFAULT_CURRENCY", "USD")
+        currency = os.environ.get("DEFAULT_CURRENCY", "EUR")
         name = f"Channel {currency}"
         channel, _ = Channel.objects.get_or_create(
             currency_code=currency,

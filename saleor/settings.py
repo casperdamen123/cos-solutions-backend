@@ -67,7 +67,7 @@ ROOT_URLCONF = "saleor.urls"
 WSGI_APPLICATION = "saleor.wsgi.application"
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+    ('Casper Damen', 'casper.damen@gmail.com'),
 )
 MANAGERS = ADMINS
 
