@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             name="type",
             field=models.CharField(
                 choices=[
-                    ("fixed", os.environ.get("DEFAULT_CURRENCY", "USD")),
+                    ("fixed", os.environ.get("DEFAULT_CURRENCY", "EUR")),
                     ("percentage", "%"),
                 ],
                 default="fixed",

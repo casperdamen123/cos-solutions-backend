@@ -55,6 +55,7 @@ from ...discount.models import (
 )
 from ...giftcard import events as gift_card_events
 from ...giftcard.models import GiftCard, GiftCardTag
+from ...graphql.discount.enums import RewardTypeEnum
 from ...menu.models import Menu, MenuItem
 from ...order import OrderStatus
 from ...order.models import Fulfillment, Order, OrderLine
@@ -107,7 +108,7 @@ PRODUCTS_LIST_DIR = "products-list/"
 
 DUMMY_STAFF_PASSWORD = "password"
 
-DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "USD")
+DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "EUR")
 
 IMAGES_MAPPING = {
     126: ["saleor-headless-omnichannel-book.png"],
@@ -212,14 +213,14 @@ def create_categories(categories_data, placeholder_dir):
 
 
 def create_collection_channel_listings(collection_channel_listings_data):
-    channel_USD = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
-    channel_PLN = Channel.objects.get(slug="channel-pln")
+    channel_NL = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
+    channel_DE = Channel.objects.get(slug="channel-de")
     for collection_channel_listing in collection_channel_listings_data:
         pk = collection_channel_listing["pk"]
         defaults = dict(collection_channel_listing["fields"])
         defaults["collection_id"] = defaults.pop("collection")
         channel = defaults.pop("channel")
-        defaults["channel_id"] = channel_USD.pk if channel == 1 else channel_PLN.pk
+        defaults["channel_id"] = channel_NL.pk if channel == 1 else channel_DE.pk
         CollectionChannelListing.objects.update_or_create(pk=pk, defaults=defaults)
 
 
@@ -282,14 +283,14 @@ def create_products(products_data, placeholder_dir, create_images):
 
 
 def create_product_channel_listings(product_channel_listings_data):
-    channel_USD = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
-    channel_PLN = Channel.objects.get(slug="channel-pln")
+    channel_NL = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
+    channel_DE = Channel.objects.get(slug="channel-de")
     for product_channel_listing in product_channel_listings_data:
         pk = product_channel_listing["pk"]
         defaults = dict(product_channel_listing["fields"])
         defaults["product_id"] = defaults.pop("product")
         channel = defaults.pop("channel")
-        defaults["channel_id"] = channel_USD.pk if channel == 1 else channel_PLN.pk
+        defaults["channel_id"] = channel_NL.pk if channel == 1 else channel_DE.pk
         ProductChannelListing.objects.update_or_create(pk=pk, defaults=defaults)
 
 
@@ -329,15 +330,15 @@ def create_product_variants(variants_data, create_images):
 
 
 def create_product_variant_channel_listings(product_variant_channel_listings_data):
-    channel_USD = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
-    channel_PLN = Channel.objects.get(slug="channel-pln")
+    channel_NL = Channel.objects.get(slug=settings.DEFAULT_CHANNEL_SLUG)
+    channel_DE = Channel.objects.get(slug="channel-de")
     for variant_channel_listing in product_variant_channel_listings_data:
         pk = variant_channel_listing["pk"]
         defaults = dict(variant_channel_listing["fields"])
 
         defaults["variant_id"] = defaults.pop("variant")
         channel = defaults.pop("channel")
-        defaults["channel_id"] = channel_USD.pk if channel == 1 else channel_PLN.pk
+        defaults["channel_id"] = channel_NL.pk if channel == 1 else channel_DE.pk
         ProductVariantChannelListing.objects.update_or_create(pk=pk, defaults=defaults)
 
 
@@ -602,10 +603,10 @@ def create_order_lines(order, how_many=10):
     for line in lines:
         variant = cast(ProductVariant, line.variant)
         unit_price_data = manager.calculate_order_line_unit(
-            order, line, variant, variant.product
+            order, line, variant, variant.product, lines
         )
         total_price_data = manager.calculate_order_line_total(
-            order, line, variant, variant.product
+            order, line, variant, variant.product, lines
         )
         line.unit_price = unit_price_data.price_with_discounts
         line.total_price = total_price_data.price_with_discounts
@@ -656,10 +657,10 @@ def create_order_lines_with_preorder(order, how_many=1):
     for line in lines:
         variant = cast(ProductVariant, line.variant)
         unit_price_data = manager.calculate_order_line_unit(
-            order, line, variant, variant.product
+            order, line, variant, variant.product, lines
         )
         total_price_data = manager.calculate_order_line_total(
-            order, line, variant, variant.product
+            order, line, variant, variant.product, lines
         )
         line.unit_price = unit_price_data.price_with_discounts
         line.total_price = total_price_data.price_with_discounts
@@ -750,7 +751,7 @@ def create_fulfillments(order):
 
 def create_fake_order(max_order_lines=5, create_preorder_lines=False):
     channel = (
-        Channel.objects.filter(slug__in=[settings.DEFAULT_CHANNEL_SLUG, "channel-pln"])
+        Channel.objects.filter(slug__in=[settings.DEFAULT_CHANNEL_SLUG, "channel-de"])
         .order_by("?")
         .first()
     )
@@ -809,6 +810,7 @@ def create_fake_order(max_order_lines=5, create_preorder_lines=False):
         lines = create_order_lines_with_preorder(order)
     else:
         lines = create_order_lines(order, random.randrange(1, max_order_lines))
+    print(lines)
     order.total = sum([line.total_price for line in lines], shipping_price)
     weight = Weight(kg=0)
     for line in order.lines.all():
@@ -828,7 +830,7 @@ def create_fake_order(max_order_lines=5, create_preorder_lines=False):
     return order
 
 
-def create_fake_promotion():
+def create_fake_catalogue_promotion():
     promotion = Promotion.objects.create(
         name=f"Happy {fake.word()} day!",
     )
@@ -859,6 +861,43 @@ def create_fake_promotion():
                                 :2
                             ]
                         ]
+                    }
+                },
+            ),
+        ]
+    )
+    channels = Channel.objects.all()
+    for rule in rules:
+        rule.channels.add(*channels)
+
+    return promotion
+
+
+def create_fake_order_promotion():
+    promotion = Promotion.objects.create(
+        name=f"Happy {fake.word()} day!",
+    )
+    rules = PromotionRule.objects.bulk_create(
+        [
+            PromotionRule(
+                promotion=promotion,
+                reward_value_type=RewardValueType.PERCENTAGE,
+                reward_value=random.choice([10, 20, 30, 40, 50]),
+                reward_type=RewardTypeEnum.SUBTOTAL_DISCOUNT.name,
+                order_predicate={
+                    "discountedObjectPredicate": {
+                        "baseSubtotalPrice": {"range": {"gte": "200"}}
+                    }
+                },
+            ),
+            PromotionRule(
+                promotion=promotion,
+                reward_value_type=RewardValueType.FIXED,
+                reward_value=random.choice([10, 20, 30, 40, 50]),
+                reward_type=RewardTypeEnum.SUBTOTAL_DISCOUNT.name,
+                order_predicate={
+                    "discountedObjectPredicate": {
+                        "baseSubtotalPrice": {"range": {"gte": "100"}}
                     }
                 },
             ),
@@ -973,10 +1012,16 @@ def create_orders(how_many=10):
         yield f"Order: {order}"
 
 
-def create_product_promotions(how_many=5):
+def create_catalogue_promotions(how_many=5):
     for _ in range(how_many):
-        promotion = create_fake_promotion()
+        promotion = create_fake_catalogue_promotion()
         update_products_discounted_prices_of_promotion_task.delay(promotion.pk)
+        yield f"Promotion: {promotion}"
+
+
+def create_order_promotions(how_many=5):
+    for _ in range(how_many):
+        promotion = create_fake_order_promotion()
         yield f"Promotion: {promotion}"
 
 
@@ -998,16 +1043,16 @@ def create_channel(channel_name, currency_code, slug=None, country=None):
 
 def create_channels():
     yield create_channel(
-        channel_name="Channel-USD",
-        currency_code="USD",
+        channel_name="Channel-NL",
+        currency_code="EUR",
         slug=settings.DEFAULT_CHANNEL_SLUG,
         country=settings.DEFAULT_COUNTRY,
     )
     yield create_channel(
-        channel_name="Channel-PLN",
-        currency_code="PLN",
-        slug="channel-pln",
-        country="PL",
+        channel_name="Channel-DE",
+        currency_code="EUR",
+        slug="channel-de",
+        country="DE",
     )
 
 
@@ -1424,7 +1469,7 @@ def create_vouchers():
     for channel in channels:
         discount_value = 25
         min_spent_amount = 200
-        if channel.currency_code == "PLN":
+        if channel.currency_code == "EUR":
             min_spent_amount *= 4
             discount_value *= 4
         VoucherChannelListing.objects.get_or_create(

@@ -93,7 +93,7 @@ def test_create_channels(db):
     for _ in random_data.create_channels():
         pass
     assert Channel.objects.all().count() == 2
-    assert Channel.objects.get(slug="channel-pln")
+    assert Channel.objects.get(slug="channel-de")
 
 
 @override_settings(DEFAULT_CHANNEL_SLUG="test-slug")
@@ -148,12 +148,23 @@ def test_create_fake_order(db, monkeypatch, image, media_root, warehouse):
     assert Order.objects.all().count() == how_many_orders
 
 
-def test_create_product_promotions(db):
+def test_create_catalogue_promotions(db):
     how_many = 5
     channel_count = 0
     for _ in random_data.create_channels():
         channel_count += 1
-    for _ in random_data.create_product_promotions(how_many):
+    for _ in random_data.create_catalogue_promotions(how_many):
+        pass
+    assert Promotion.objects.all().count() == how_many
+    assert PromotionRule.objects.all().count() == how_many * 2
+
+
+def test_create_order_promotions(db):
+    how_many = 5
+    channel_count = 0
+    for _ in random_data.create_channels():
+        channel_count += 1
+    for _ in random_data.create_order_promotions(how_many):
         pass
     assert Promotion.objects.all().count() == how_many
     assert PromotionRule.objects.all().count() == how_many * 2

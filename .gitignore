@@ -27,6 +27,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+*.env
+private-key.pem
 
 # Exported results file
 django-queries-results.html
+
+test.py

@@ -44,7 +44,7 @@ def _create_permission_groups(user):
 
 
 @pytest.fixture
-def users_for_customers_benchmarks(channel_USD, address, shipping_method):
+def users_for_customers_benchmarks(channel_EUR, address, shipping_method):
     users = [
         User(
             email=f"jane.doe.{i}@example.com",
@@ -62,12 +62,12 @@ def users_for_customers_benchmarks(channel_USD, address, shipping_method):
 
     orders = [
         Order(
-            channel=channel_USD,
+            channel=channel_EUR,
             billing_address=address.get_copy(),
             shipping_address=address.get_copy(),
             shipping_method=shipping_method,
             user=users_for_customers_benchmarks[i],
-            total=TaxedMoney(net=Money(i, "USD"), gross=Money(i, "USD")),
+            total=TaxedMoney(net=Money(i, "EUR"), gross=Money(i, "EUR")),
         )
         for i in range(ORDER_COUNT_IN_BENCHMARKS)
     ]

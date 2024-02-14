@@ -62,7 +62,7 @@ def create_default_channel(apps, schema_editor):
     default_currency = get_default_currency(
         Checkout, Order, Product, ShippingMethod, Voucher
     )
-    default_country = os.environ.get("DEFAULT_COUNTRY", "US")
+    default_country = os.environ.get("DEFAULT_COUNTRY", "NL")
     if default_currency:
         Channel.objects.create(
             name="Default channel",
