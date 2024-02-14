@@ -22,18 +22,12 @@ services:
       - saleor-media:/app/media
     env_file:
       - backend.env
-    environment:
-      - ALLOWED_HOSTS=localhost,api
-
 
   dashboard:
     image: ghcr.io/saleor/saleor-dashboard:latest
     ports:
       - 9000:80
     restart: unless-stopped
-    # environment:
-    #   - API_URL=https://cd63-86-87-160-100.ngrok-free.app/graphql/
-    #   - API_URI=https://cd63-86-87-160-100.ngrok-free.app/graphql/
 
   db:
     image: library/postgres:13-alpine

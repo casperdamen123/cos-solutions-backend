@@ -32,3 +32,5 @@ private-key.pem
 
 # Exported results file
 django-queries-results.html
+
+test.py
